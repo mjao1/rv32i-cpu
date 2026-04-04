@@ -1,17 +1,39 @@
 module tb_instruction_memory ();
+  logic clk_w;
+  logic write_en_w;
+  logic [31:0] write_addr_w;
+  logic [31:0] write_data_w;
   logic [31:0] addr_w;
   logic [31:0] instruction_w;
 
   instruction_memory #(
-    .MEM_SIZE (256),
-    .MEM_INIT ("test/programs/test_imem.hex")
+    .MEM_SIZE (256)
   ) u_instruction_memory (
+    .clk_i (clk_w),
+    .write_en_i (write_en_w),
+    .write_addr_i (write_addr_w),
+    .write_data_i (write_data_w),
     .addr_i (addr_w),
     .instruction_o (instruction_w)
   );
 
   int test_count_r = 0;
   int pass_count_r = 0;
+
+  initial clk_w = 0;
+  always #5 clk_w = ~clk_w;
+
+  task automatic write_word(
+    input logic [31:0] addr,
+    input logic [31:0] data
+  );
+    write_addr_w = addr;
+    write_data_w = data;
+    write_en_w = 1'b1;
+    @(posedge clk_w);
+    #1;
+    write_en_w = 1'b0;
+  endtask
 
   task automatic check(
     input string name,
@@ -30,11 +52,18 @@ module tb_instruction_memory ();
   endtask
 
   initial begin
-    // test_imem.hex:
-    // addr 0x00: 00500093 (ADDI x1, x0, 5)
-    // addr 0x04: 00A00113 (ADDI x2, x0, 10)
-    // addr 0x08: 002081B3 (ADD  x3, x1, x2)
-    // addr 0x0C: 40208233 (SUB  x4, x1, x2)
+    write_en_w = 1'b0;
+    write_addr_w = 32'b0;
+    write_data_w = 32'b0;
+    addr_w = 32'b0;
+    @(posedge clk_w);
+    #1;
+
+    // Load program via write port
+    write_word(32'h0000_0000, 32'h0050_0093); // ADDI x1, x0, 5
+    write_word(32'h0000_0004, 32'h00A0_0113); // ADDI x2, x0, 10
+    write_word(32'h0000_0008, 32'h0020_81B3); // ADD x3, x1, x2
+    write_word(32'h0000_000C, 32'h4020_8233); // SUB x4, x1, x2
 
     check("word 0", 32'h0000_0000, 32'h0050_0093);
     check("word 1", 32'h0000_0004, 32'h00A0_0113);
