@@ -1,6 +1,7 @@
 module rv32i_cpu import rv32i_pkg::*; #(
   parameter IMEM_SIZE = 1024,
-  parameter DMEM_SIZE = 4096
+  parameter DMEM_SIZE = 4096,
+  parameter logic [31:0] DMEM_BASE = 32'h0000_0000
 ) (
   input logic clk_i,
   input logic rst_i,
@@ -127,7 +128,8 @@ module rv32i_cpu import rv32i_pkg::*; #(
   logic [31:0] mem_read_data_w;
 
   data_memory #(
-    .MEM_SIZE (DMEM_SIZE)
+    .MEM_SIZE (DMEM_SIZE),
+    .DMEM_BASE (DMEM_BASE)
   ) u_data_memory (
     .clk_i (clk_i),
     .addr_i (alu_result_w),
