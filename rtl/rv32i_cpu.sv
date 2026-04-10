@@ -252,7 +252,6 @@ module rv32i_cpu import rv32i_pkg::*; #(
 
   // Hazard unit
   hazard_unit u_hazard_unit (
-    .id_ex_opcode_i (id_ex_instr_r[6:0]),
     .id_ex_rs1_i (id_ex_rs1_addr_r),
     .id_ex_rs2_i (id_ex_rs2_addr_r),
     .ex_mem_reg_write_i (ex_mem_reg_write_r),
