@@ -127,7 +127,6 @@ module rv32i_cpu import rv32i_pkg::*; #(
 
   // -ID/EX-
   logic [31:0] id_ex_pc_r;
-  logic [31:0] id_ex_instr_r;
   logic [31:0] id_ex_imm_r;
   logic [31:0] id_ex_rs1_data_r;
   logic [31:0] id_ex_rs2_data_r;
@@ -147,7 +146,6 @@ module rv32i_cpu import rv32i_pkg::*; #(
   always_ff @(posedge clk_i) begin
     if (rst_i) begin
       id_ex_pc_r         <= 32'b0;
-      id_ex_instr_r      <= NOP_INSTR;
       id_ex_imm_r        <= 32'b0;
       id_ex_rs1_data_r   <= 32'b0;
       id_ex_rs2_data_r   <= 32'b0;
@@ -165,7 +163,6 @@ module rv32i_cpu import rv32i_pkg::*; #(
       id_ex_funct3_r     <= 3'b0;
     end else if (branch_taken_ex_w || stall_w) begin
       id_ex_pc_r         <= 32'b0;
-      id_ex_instr_r      <= NOP_INSTR;
       id_ex_imm_r        <= 32'b0;
       id_ex_rs1_data_r   <= 32'b0;
       id_ex_rs2_data_r   <= 32'b0;
@@ -183,7 +180,6 @@ module rv32i_cpu import rv32i_pkg::*; #(
       id_ex_funct3_r     <= 3'b0;
     end else begin
       id_ex_pc_r         <= if_id_pc_r;
-      id_ex_instr_r      <= if_id_instr_r;
       id_ex_imm_r        <= id_immediate_w;
       id_ex_rs1_data_r   <= id_rs1_data_w;
       id_ex_rs2_data_r   <= id_rs2_data_w;
