@@ -110,6 +110,15 @@ iverilog -g2012 -o sim/tb_instruction_memory.vvp rtl/instruction_memory.sv sim/t
 
 # Data memory
 iverilog -g2012 -o sim/tb_data_memory.vvp rtl/data_memory.sv sim/tb_data_memory.sv && vvp sim/tb_data_memory.vvp
+
+# Forward unit
+iverilog -g2012 -o sim/tb_forward_unit.vvp rtl/rv32i_pkg.sv rtl/forward_unit.sv sim/tb_forward_unit.sv && vvp sim/tb_forward_unit.vvp
+
+# Hazard unit
+iverilog -g2012 -o sim/tb_hazard_unit.vvp rtl/rv32i_pkg.sv rtl/hazard_unit.sv sim/tb_hazard_unit.sv && vvp sim/tb_hazard_unit.vvp
+
+# Load-use hazard tests
+iverilog -g2012 -o sim/tb_load_use_hazard.vvp rtl/rv32i_pkg.sv sim/tb_load_use_hazard.sv rtl/a*.sv rtl/b*.sv rtl/d*.sv rtl/f*.sv rtl/h*.sv rtl/i*.sv rtl/register_file.sv rtl/rv32i_cpu.sv && vvp sim/tb_load_use_hazard.vvp
 ```
 
 ## Synthesis

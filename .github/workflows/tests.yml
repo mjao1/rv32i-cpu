@@ -59,6 +59,18 @@ jobs:
           vvp sim/tb_data_memory.vvp | tee test_output.log
           ! grep -v 'FAILED: 0' test_output.log | grep -q 'FAIL\|ERROR'
 
+      - name: forward_unit
+        run: |
+          iverilog -g2012 -o sim/tb_forward_unit.vvp rtl/rv32i_pkg.sv rtl/forward_unit.sv sim/tb_forward_unit.sv
+          vvp sim/tb_forward_unit.vvp | tee test_output.log
+          ! grep -v 'FAILED: 0' test_output.log | grep -q 'FAIL\|ERROR'
+
+      - name: hazard_unit
+        run: |
+          iverilog -g2012 -o sim/tb_hazard_unit.vvp rtl/rv32i_pkg.sv rtl/hazard_unit.sv sim/tb_hazard_unit.sv
+          vvp sim/tb_hazard_unit.vvp | tee test_output.log
+          ! grep -v 'FAILED: 0' test_output.log | grep -q 'FAIL\|ERROR'
+
       - name: rv32i_cpu
         run: |
           iverilog -g2012 -o sim/tb_rv32i_cpu.vvp rtl/rv32i_pkg.sv sim/tb_rv32i_cpu.sv rtl/a*.sv rtl/b*.sv rtl/d*.sv rtl/f*.sv rtl/h*.sv rtl/i*.sv rtl/register_file.sv rtl/rv32i_cpu.sv
@@ -69,4 +81,10 @@ jobs:
         run: |
           iverilog -g2012 -o sim/tb_rv32i_cpu_c.vvp rtl/rv32i_pkg.sv sim/tb_rv32i_cpu_c.sv rtl/a*.sv rtl/b*.sv rtl/d*.sv rtl/f*.sv rtl/h*.sv rtl/i*.sv rtl/register_file.sv rtl/rv32i_cpu.sv
           vvp sim/tb_rv32i_cpu_c.vvp | tee test_output.log
+          ! grep -v 'FAILED: 0' test_output.log | grep -q 'FAIL\|ERROR'
+
+      - name: load_use_hazard
+        run: |
+          iverilog -g2012 -o sim/tb_load_use_hazard.vvp rtl/rv32i_pkg.sv sim/tb_load_use_hazard.sv rtl/a*.sv rtl/b*.sv rtl/d*.sv rtl/f*.sv rtl/h*.sv rtl/i*.sv rtl/register_file.sv rtl/rv32i_cpu.sv
+          vvp sim/tb_load_use_hazard.vvp | tee test_output.log
           ! grep -v 'FAILED: 0' test_output.log | grep -q 'FAIL\|ERROR'
