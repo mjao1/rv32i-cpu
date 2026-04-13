@@ -23,6 +23,7 @@ A synthesizable 5-stage pipelined RISC-V RV32I processor in SystemVerilog, aimed
 rv32i-cpu/             
 ├── rtl/
 │   ├── alu.sv
+│   ├── branch_predictor.sv
 │   ├── branch_unit.sv
 │   ├── data_memory.sv
 │   ├── decoder.sv
