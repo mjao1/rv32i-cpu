@@ -144,6 +144,8 @@ module tb_decoder import rv32i_pkg::*; ();
     // U-type
     // LUI x1, 0x12345
     check("LUI", 32'h12345_0B7, ALU_ADD, 0, 1, 1, 0, RESULT_ALU, 0, BRANCH_BEQ);
+    // LUI x5, 0xABCDE
+    check("LUI src_a", 32'hABCDE2B7, ALU_ADD, 1, 1, 1, 0, RESULT_ALU, 0, BRANCH_BEQ);
     // AUIPC x1, 0x12345
     check("AUIPC", 32'h12345_097, ALU_ADD, 1, 1, 1, 0, RESULT_ALU, 0, BRANCH_BEQ);
 
