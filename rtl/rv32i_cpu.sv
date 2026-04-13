@@ -248,11 +248,11 @@ module rv32i_cpu #(
 
   // Hazard unit
   hazard_unit u_hazard_unit (
-    .id_ex_rs1_i (id_ex_rs1_addr_r),
-    .id_ex_rs2_i (id_ex_rs2_addr_r),
-    .ex_mem_reg_write_i (ex_mem_reg_write_r),
-    .ex_mem_result_src_i (ex_mem_result_src_r),
-    .ex_mem_rd_i (ex_mem_rd_addr_r),
+    .if_id_rs1_i (id_rs1_addr_w),
+    .if_id_rs2_i (id_rs2_addr_w),
+    .id_ex_reg_write_i (id_ex_reg_write_r),
+    .id_ex_result_src_i (id_ex_result_src_r),
+    .id_ex_rd_i (id_ex_rd_addr_r),
     .stall_if_o (stall_w)
   );
 
