@@ -3,14 +3,18 @@ module tb_branch_unit import rv32i_pkg::*; ();
   logic [31:0] rs2_data_w;
   branch_op_t branch_op_w;
   logic branch_w;
+  logic predicted_taken_w;
   logic branch_taken_w;
+  logic flush_w;
 
   branch_unit u_branch_unit (
     .rs1_data_i (rs1_data_w),
     .rs2_data_i (rs2_data_w),
     .branch_op_i (branch_op_w),
     .branch_i (branch_w),
-    .branch_taken_o (branch_taken_w)
+    .predicted_taken_i (predicted_taken_w),
+    .branch_taken_o (branch_taken_w),
+    .flush_o (flush_w)
   );
 
   int test_count_r = 0;
@@ -28,6 +32,7 @@ module tb_branch_unit import rv32i_pkg::*; ();
     rs2_data_w = rs2;
     branch_op_w = op;
     branch_w = br;
+    predicted_taken_w = 1'b0;
     #1;
 
     test_count_r++;
@@ -36,6 +41,29 @@ module tb_branch_unit import rv32i_pkg::*; ();
     end else begin
       $display("FAIL: %-20s rs1=0x%08h rs2=0x%08h op=%0d br=%0b got=%0b expected=%0b",
                name, rs1, rs2, op, br, branch_taken_w, expected);
+    end
+  endtask
+
+  task automatic check_flush(
+    input string name,
+    input branch_op_t op,
+    input logic br,
+    input logic taken,
+    input logic predicted,
+    input logic exp_flush
+  );
+    rs1_data_w = taken ? 32'd5 : 32'd5;
+    rs2_data_w = taken ? 32'd5 : 32'd6;
+    branch_op_w = op;
+    branch_w = br;
+    predicted_taken_w = predicted;
+    #1;
+
+    test_count_r++;
+    if (flush_w === exp_flush) begin
+      pass_count_r++;
+    end else begin
+      $display("FAIL: %-20s pred=%0b taken=%0b flush=%0b exp=%0b", name, predicted, branch_taken_w, flush_w, exp_flush);
     end
   endtask
 
@@ -76,6 +104,14 @@ module tb_branch_unit import rv32i_pkg::*; ();
     // Edge cases
     check("BLT min/max", 32'h8000_0000, 32'h7FFF_FFFF, BRANCH_BLT, 1'b1, 1'b1); // INT_MIN < INT_MAX
     check("BGE max/min", 32'h7FFF_FFFF, 32'h8000_0000, BRANCH_BGE, 1'b1, 1'b1); // INT_MAX >= INT_MIN
+
+    // Flush (mispredict detection)
+    check_flush("pred=0 taken=1", BRANCH_BEQ, 1'b1, 1'b1, 1'b0, 1'b1);
+    check_flush("pred=1 taken=0", BRANCH_BEQ, 1'b1, 1'b0, 1'b1, 1'b1);
+    check_flush("pred=1 taken=1", BRANCH_BEQ, 1'b1, 1'b1, 1'b1, 1'b0);
+    check_flush("pred=0 taken=0", BRANCH_BEQ, 1'b1, 1'b0, 1'b0, 1'b0);
+    check_flush("JAL flush", BRANCH_JAL, 1'b1, 1'b1, 1'b0, 1'b1);
+    check_flush("no branch", BRANCH_BEQ, 1'b0, 1'b0, 1'b0, 1'b0);
 
     $display("PASSED: %0d", pass_count_r);
     $display("FAILED: %0d", test_count_r - pass_count_r);

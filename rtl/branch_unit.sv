@@ -3,10 +3,14 @@ module branch_unit (
   input logic [31:0] rs2_data_i,
   input logic [2:0] branch_op_i,
   input logic branch_i,
-  output logic branch_taken_o
+  input logic predicted_taken_i,
+  output logic branch_taken_o,
+  output logic flush_o
 );
 
   logic condition_met_w;
+  logic is_cond_branch_w;
+  logic is_jump_w;
 
   always_comb begin
     case (branch_op_i)
@@ -22,5 +26,9 @@ module branch_unit (
   end
 
   assign branch_taken_o = branch_i & condition_met_w;
+  
+  assign is_cond_branch_w = branch_i && (branch_op_i != rv32i_pkg::BRANCH_JAL);
+  assign is_jump_w = branch_taken_o && (branch_op_i == rv32i_pkg::BRANCH_JAL);
+  assign flush_o = (is_cond_branch_w && (predicted_taken_i != branch_taken_o)) || is_jump_w;
 
 endmodule

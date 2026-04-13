@@ -19,16 +19,17 @@ module rv32i_cpu #(
   assign pc_plus4_w = pc_r + 32'd4;
 
   logic stall_w;
-  logic branch_taken_ex_w;
-  logic [31:0] branch_target_ex_w;
+  logic [31:0] redirect_target_w;
 
   always_ff @(posedge clk_i) begin
     if (rst_i)
       pc_r <= 32'b0;
     else if (stall_w)
       pc_r <= pc_r;
-    else if (branch_taken_ex_w)
-      pc_r <= branch_target_ex_w;
+    else if (ex_flush_w)
+      pc_r <= redirect_target_w;
+    else if (predict_taken_if_w)
+      pc_r <= predicted_target_if_w;
     else
       pc_r <= pc_plus4_w;
   end
@@ -48,22 +49,37 @@ module rv32i_cpu #(
     .instruction_o (instruction_f_w)
   );
 
+  // Branch predictor (BTFNT)
+  logic predict_taken_if_w;
+  logic [31:0] predicted_target_if_w;
+
+  branch_predictor u_branch_predictor (
+    .instruction_i (instruction_f_w),
+    .pc_i (pc_r),
+    .predict_taken_o (predict_taken_if_w),
+    .predicted_target_o (predicted_target_if_w)
+  );
+
   // -IF/ID-
   logic [31:0] if_id_pc_r;
   logic [31:0] if_id_instr_r;
+  logic if_id_predicted_taken_r;
 
   always_ff @(posedge clk_i) begin
     if (rst_i) begin
       if_id_pc_r    <= 32'b0;
       if_id_instr_r <= NOP_INSTR;
-    end else if (branch_taken_ex_w) begin
+      if_id_predicted_taken_r <= 1'b0;
+    end else if (ex_flush_w) begin
       if_id_instr_r <= NOP_INSTR;
       if_id_pc_r    <= 32'b0;
+      if_id_predicted_taken_r <= 1'b0;
     end else if (stall_w) begin
       // hold
     end else begin
       if_id_instr_r <= instruction_f_w;
       if_id_pc_r    <= pc_r;
+      if_id_predicted_taken_r <= predict_taken_if_w;
     end
   end
 
@@ -142,6 +158,7 @@ module rv32i_cpu #(
   logic [4:0] id_ex_rs2_addr_r;
   logic [4:0] id_ex_rd_addr_r;
   logic [2:0] id_ex_funct3_r;
+  logic id_ex_predicted_taken_r;
 
   always_ff @(posedge clk_i) begin
     if (rst_i) begin
@@ -161,7 +178,8 @@ module rv32i_cpu #(
       id_ex_rs2_addr_r   <= 5'b0;
       id_ex_rd_addr_r    <= 5'b0;
       id_ex_funct3_r     <= 3'b0;
-    end else if (branch_taken_ex_w || stall_w) begin
+      id_ex_predicted_taken_r <= 1'b0;
+    end else if (ex_flush_w || stall_w) begin
       id_ex_pc_r         <= 32'b0;
       id_ex_imm_r        <= 32'b0;
       id_ex_rs1_data_r   <= 32'b0;
@@ -178,6 +196,7 @@ module rv32i_cpu #(
       id_ex_rs2_addr_r   <= 5'b0;
       id_ex_rd_addr_r    <= 5'b0;
       id_ex_funct3_r     <= 3'b0;
+      id_ex_predicted_taken_r <= 1'b0;
     end else begin
       id_ex_pc_r         <= if_id_pc_r;
       id_ex_imm_r        <= id_immediate_w;
@@ -195,6 +214,7 @@ module rv32i_cpu #(
       id_ex_rs2_addr_r   <= id_rs2_addr_w;
       id_ex_rd_addr_r    <= id_rd_addr_w;
       id_ex_funct3_r     <= id_funct3_w;
+      id_ex_predicted_taken_r <= if_id_predicted_taken_r;
     end
   end
 
@@ -215,12 +235,15 @@ module rv32i_cpu #(
 
   // Branch unit
   logic ex_branch_taken_w;
+  logic ex_flush_w;
   branch_unit u_branch_unit (
     .rs1_data_i (ex_rs1_fwd_w),
     .rs2_data_i (ex_rs2_fwd_w),
     .branch_op_i (id_ex_branch_op_r),
     .branch_i (id_ex_branch_r),
-    .branch_taken_o (ex_branch_taken_w)
+    .predicted_taken_i (id_ex_predicted_taken_r),
+    .branch_taken_o (ex_branch_taken_w),
+    .flush_o (ex_flush_w)
   );
 
   // Forward unit
@@ -243,8 +266,7 @@ module rv32i_cpu #(
     .rs2_fwd_o (ex_rs2_fwd_w)
   );
 
-  assign branch_taken_ex_w = ex_branch_taken_w;
-  assign branch_target_ex_w = {ex_alu_result_w[31:1], 1'b0};
+  assign redirect_target_w = (id_ex_predicted_taken_r && !ex_branch_taken_w) ? (id_ex_pc_r + 32'd4) : {ex_alu_result_w[31:1], 1'b0};
 
   // Hazard unit
   hazard_unit u_hazard_unit (
