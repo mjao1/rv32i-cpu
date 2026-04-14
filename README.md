@@ -72,7 +72,7 @@ Run commands from the **repository root**. Outputs `sim/tb_*.vvp` are regenerate
 
 ### Top-level smoke test
 ```bash
-iverilog -g2012 -o sim/tb_rv32i_cpu.vvp rtl/rv32i_pkg.sv sim/tb_rv32i_cpu.sv rtl/a*.sv rtl/b*.sv rtl/d*.sv rtl/f*.sv rtl/h*.sv rtl/i*.sv rtl/register_file.sv rtl/rv32i_cpu.sv && vvp sim/tb_rv32i_cpu.vvp
+iverilog -g2012 -o sim/tb_rv32i_cpu.vvp rtl/rv32i_pkg.sv rtl/alu.sv rtl/register_file.sv rtl/data_memory.sv rtl/instruction_memory.sv rtl/decoder.sv rtl/immediate_generator.sv rtl/branch_unit.sv rtl/branch_predictor.sv rtl/forward_unit.sv rtl/hazard_unit.sv rtl/rv32i_cpu.sv sim/tb_rv32i_cpu.sv && vvp sim/tb_rv32i_cpu.vvp
 ```
 
 ### Top-level test with compiled C
@@ -80,7 +80,7 @@ Build the bare-metal image first, then simulate:
 
 ```bash
 cd test/software && make && cd ../..
-iverilog -g2012 -o sim/tb_rv32i_cpu_c.vvp rtl/rv32i_pkg.sv sim/tb_rv32i_cpu_c.sv rtl/a*.sv rtl/b*.sv rtl/d*.sv rtl/f*.sv rtl/h*.sv rtl/i*.sv rtl/register_file.sv rtl/rv32i_cpu.sv && vvp sim/tb_rv32i_cpu_c.vvp
+iverilog -g2012 -o sim/tb_rv32i_cpu_c.vvp rtl/rv32i_pkg.sv rtl/alu.sv rtl/register_file.sv rtl/data_memory.sv rtl/instruction_memory.sv rtl/decoder.sv rtl/immediate_generator.sv rtl/branch_unit.sv rtl/branch_predictor.sv rtl/forward_unit.sv rtl/hazard_unit.sv rtl/rv32i_cpu.sv sim/tb_rv32i_cpu_c.sv && vvp sim/tb_rv32i_cpu_c.vvp
 ```
 
 The C testbench checks return value in a0 (x10) against `expected_value` in `sim/tb_rv32i_cpu_c.sv`
@@ -123,7 +123,7 @@ iverilog -g2012 -o sim/tb_hazard_unit.vvp rtl/rv32i_pkg.sv rtl/hazard_unit.sv si
 ### Case specific tests
 ```bash
 # Load-use hazard
-iverilog -g2012 -o sim/tb_load_use_hazard.vvp rtl/rv32i_pkg.sv sim/tb_load_use_hazard.sv rtl/a*.sv rtl/b*.sv rtl/d*.sv rtl/f*.sv rtl/h*.sv rtl/i*.sv rtl/register_file.sv rtl/rv32i_cpu.sv && vvp sim/tb_load_use_hazard.vvp
+iverilog -g2012 -o sim/tb_load_use_hazard.vvp rtl/rv32i_pkg.sv rtl/alu.sv rtl/register_file.sv rtl/data_memory.sv rtl/instruction_memory.sv rtl/decoder.sv rtl/immediate_generator.sv rtl/branch_unit.sv rtl/branch_predictor.sv rtl/forward_unit.sv rtl/hazard_unit.sv rtl/rv32i_cpu.sv sim/tb_load_use_hazard.sv && vvp sim/tb_load_use_hazard.vvp
 
 # Branch cycle count benchmark (current: 227)
 iverilog -g2012 -o sim/tb_branch_benchmark.vvp rtl/rv32i_pkg.sv rtl/alu.sv rtl/register_file.sv rtl/data_memory.sv rtl/instruction_memory.sv rtl/decoder.sv rtl/immediate_generator.sv rtl/branch_unit.sv rtl/branch_predictor.sv rtl/forward_unit.sv rtl/hazard_unit.sv rtl/rv32i_cpu.sv sim/tb_branch_benchmark.sv && vvp sim/tb_branch_benchmark.vvp
