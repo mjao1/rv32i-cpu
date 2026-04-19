@@ -40,15 +40,17 @@ module axi_lite_dmem_slave #(
   end
 
   function automatic logic [31:0] phys(input logic [31:0] byte_addr);
-    return byte_addr - ADDR_BASE;
+    phys = byte_addr - ADDR_BASE;
   endfunction
 
   function automatic logic addr_word_ok(input logic [31:0] byte_addr);
     logic [31:0] aligned;
     logic [31:0] p;
-    aligned = byte_addr & 32'hFFFF_FFFC;
-    p = phys(aligned);
-    return byte_addr >= ADDR_BASE && (p + 32'd4 <= MEM_BYTES);
+    begin
+      aligned = byte_addr & 32'hFFFF_FFFC;
+      p = phys(aligned);
+      addr_word_ok = byte_addr >= ADDR_BASE && (p + 32'd4 <= MEM_BYTES);
+    end
   endfunction
 
   // Write channel: AW then W (or same cycle)

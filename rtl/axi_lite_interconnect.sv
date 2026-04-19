@@ -52,31 +52,34 @@ module axi_lite_interconnect #(
   localparam logic [2:0] WR_ERR = 3'd4;
 
   function automatic logic hit_dmem(input logic [31:0] addr);
-    return (addr >= DMEM_BASE) && (addr < (DMEM_BASE + DMEM_BYTES));
+    hit_dmem = (addr >= DMEM_BASE) && (addr < (DMEM_BASE + DMEM_BYTES));
   endfunction
 
   function automatic logic hit_gpio(input logic [31:0] addr);
-    return (addr >= GPIO_BASE) && (addr < (GPIO_BASE + GPIO_BYTES));
+    hit_gpio = (addr >= GPIO_BASE) && (addr < (GPIO_BASE + GPIO_BYTES));
   endfunction
 
   function automatic logic hit_uart(input logic [31:0] addr);
-    return (addr >= UART_BASE) && (addr < (UART_BASE + UART_BYTES));
+    hit_uart = (addr >= UART_BASE) && (addr < (UART_BASE + UART_BYTES));
   endfunction
 
   function automatic logic hit_timer(input logic [31:0] addr);
-    return (addr >= TIMER_BASE) && (addr < (TIMER_BASE + TIMER_BYTES));
+    hit_timer = (addr >= TIMER_BASE) && (addr < (TIMER_BASE + TIMER_BYTES));
   endfunction
 
   function automatic logic [2:0] wr_decode(input logic [31:0] addr);
-    if (hit_dmem(addr))
-      return WR_DMEM;
-    if (hit_gpio(addr))
-      return WR_GPIO;
-    if (hit_uart(addr))
-      return WR_UART;
-    if (hit_timer(addr))
-      return WR_TIMER;
-    return WR_ERR;
+    begin
+      if (hit_dmem(addr))
+        wr_decode = WR_DMEM;
+      else if (hit_gpio(addr))
+        wr_decode = WR_GPIO;
+      else if (hit_uart(addr))
+        wr_decode = WR_UART;
+      else if (hit_timer(addr))
+        wr_decode = WR_TIMER;
+      else
+        wr_decode = WR_ERR;
+    end
   endfunction
 
   logic wr_pending_r;

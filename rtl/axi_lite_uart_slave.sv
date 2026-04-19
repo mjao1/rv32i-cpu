@@ -39,15 +39,15 @@ module axi_lite_uart_slave #(
   localparam logic [31:0] OFF_DIV = 32'h0000_0008;
 
   function automatic logic addr_in_range(input logic [31:0] byte_addr);
-    return byte_addr >= ADDR_BASE && byte_addr < (ADDR_BASE + ADDR_BYTES);
+    addr_in_range = byte_addr >= ADDR_BASE && byte_addr < (ADDR_BASE + ADDR_BYTES);
   endfunction
 
   function automatic logic addr_word_ok(input logic [31:0] byte_addr);
-    return addr_in_range(byte_addr) && addr_in_range(byte_addr + 32'd3);
+    addr_word_ok = addr_in_range(byte_addr) && addr_in_range(byte_addr + 32'd3);
   endfunction
 
   function automatic logic [31:0] reg_off(input logic [31:0] axaddr);
-    return axaddr - ADDR_BASE;
+    reg_off = axaddr - ADDR_BASE;
   endfunction
 
   // Baud: DIV = clock cycles per serial bit (minimum 8), drives TX/RX bit counters
@@ -388,14 +388,17 @@ module axi_lite_uart_slave #(
   // Per register read
   function automatic logic [31:0] read_reg(input logic [31:0] axaddr);
     logic [31:0] off;
-    off = reg_off(axaddr);
-    if (off == OFF_STAT)
-      return {26'b0, rx_overrun_r, tx_busy_w, txe_w, rxne_w};
-    if (off == OFF_DIV)
-      return div_r;
-    if (off == OFF_DATA)
-      return {24'b0, rxne_w ? rx_data_r : 8'b0};
-    return 32'b0;
+    begin
+      off = reg_off(axaddr);
+      if (off == OFF_STAT)
+        read_reg = {26'b0, rx_overrun_r, tx_busy_w, txe_w, rxne_w};
+      else if (off == OFF_DIV)
+        read_reg = div_r;
+      else if (off == OFF_DATA)
+        read_reg = {24'b0, rxne_w ? rx_data_r : 8'b0};
+      else
+        read_reg = 32'b0;
+    end
   endfunction
 
   // Capture RDATA at AR

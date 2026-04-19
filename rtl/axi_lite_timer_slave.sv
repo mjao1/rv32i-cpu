@@ -36,15 +36,15 @@ module axi_lite_timer_slave #(
   localparam logic [31:0] OFF_CTRL = 32'h0000_0008;
 
   function automatic logic addr_in_range(input logic [31:0] byte_addr);
-    return byte_addr >= ADDR_BASE && byte_addr < (ADDR_BASE + ADDR_BYTES);
+    addr_in_range = byte_addr >= ADDR_BASE && byte_addr < (ADDR_BASE + ADDR_BYTES);
   endfunction
 
   function automatic logic addr_word_ok(input logic [31:0] byte_addr);
-    return addr_in_range(byte_addr) && addr_in_range(byte_addr + 32'd3);
+    addr_word_ok = addr_in_range(byte_addr) && addr_in_range(byte_addr + 32'd3);
   endfunction
 
   function automatic logic [31:0] reg_off(input logic [31:0] axaddr);
-    return axaddr - ADDR_BASE;
+    reg_off = axaddr - ADDR_BASE;
   endfunction
 
   // Counter and control (RELOAD stored for software, not used for wrap in this model)
@@ -176,14 +176,17 @@ module axi_lite_timer_slave #(
   // Per register read
   function automatic logic [31:0] read_reg(input logic [31:0] axaddr);
     logic [31:0] off;
-    off = reg_off(axaddr);
-    if (off == OFF_COUNT)
-      return cnt_r;
-    if (off == OFF_RELOAD)
-      return reload_r;
-    if (off == OFF_CTRL)
-      return {31'b0, en_r};
-    return 32'b0;
+    begin
+      off = reg_off(axaddr);
+      if (off == OFF_COUNT)
+        read_reg = cnt_r;
+      else if (off == OFF_RELOAD)
+        read_reg = reload_r;
+      else if (off == OFF_CTRL)
+        read_reg = {31'b0, en_r};
+      else
+        read_reg = 32'b0;
+    end
   endfunction
 
   always_ff @(posedge clk_i) begin

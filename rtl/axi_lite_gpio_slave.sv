@@ -38,11 +38,11 @@ module axi_lite_gpio_slave #(
   localparam logic [31:0] OFF_DIR = 32'h0000_0004;
 
   function automatic logic addr_in_range(input logic [31:0] byte_addr);
-    return byte_addr >= ADDR_BASE && byte_addr < (ADDR_BASE + ADDR_BYTES);
+    addr_in_range = byte_addr >= ADDR_BASE && byte_addr < (ADDR_BASE + ADDR_BYTES);
   endfunction
 
   function automatic logic addr_word_ok(input logic [31:0] byte_addr);
-    return addr_in_range(byte_addr) && addr_in_range(byte_addr + 32'd3);
+    addr_word_ok = addr_in_range(byte_addr) && addr_in_range(byte_addr + 32'd3);
   endfunction
 
   // Sync inputs
@@ -94,7 +94,7 @@ module axi_lite_gpio_slave #(
 
   // Write data: apply WSTRB to DATA or DIR registers
   function automatic logic [31:0] reg_offset(input logic [31:0] axaddr);
-    return axaddr - ADDR_BASE;
+    reg_offset = axaddr - ADDR_BASE;
   endfunction
 
   integer k;
@@ -147,12 +147,15 @@ module axi_lite_gpio_slave #(
   // Read data: per-register value (DATA merges pads vs latched outputs)
   function automatic logic [31:0] read_reg(input logic [31:0] axaddr);
     logic [31:0] off;
-    off = reg_offset(axaddr);
-    if (off == OFF_DATA)
-      return (gpio_i_sync_r & ~dir_r) | (data_out_r & dir_r);
-    if (off == OFF_DIR)
-      return dir_r;
-    return 32'b0;
+    begin
+      off = reg_offset(axaddr);
+      if (off == OFF_DATA)
+        read_reg = (gpio_i_sync_r & ~dir_r) | (data_out_r & dir_r);
+      else if (off == OFF_DIR)
+        read_reg = dir_r;
+      else
+        read_reg = 32'b0;
+    end
   endfunction
 
   always_ff @(posedge clk_i) begin
