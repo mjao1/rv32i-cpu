@@ -66,6 +66,7 @@ rv32i-soc/
 │   ├── tb_rv32i_cpu.sv          # CPU smoke test
 │   ├── tb_rv32i_soc_c.sv        # C program (AXI DMEM)
 │   ├── tb_rv32i_soc_integration.sv  # C program (DMEM+GPIO+timer+UART)
+│   ├── tb_rv32i_soc_program.sv  # Parameterized runner for tests/soc_program_*.c
 │   └── tb_rv32i_soc.sv          # SoC smoke test
 └── test/
     ├── programs/                # *.mem / *.hex images for simulation
