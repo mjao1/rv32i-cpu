@@ -4,9 +4,15 @@
 
 A synthesizable RISC-V RV32I SoC in SystemVerilog: a 5-stage pipelined CPU, AXI-Lite interconnect, and memory-mapped slaves (data RAM, GPIO, UART, timer, error target). Simulation targets Icarus Verilog and ASIC-style flows. The included rv32i_cpu implements the main RV32I user-level integer operations: ALU ops, loads/stores, branches, jumps, LUI/AUIPC, and JAL/JALR. The pipeline is complete for a classic in-order design: operand forwarding from EX/MEM and MEM/WB, hazard handling via load–use stalls, BTFNT branch prediction, and control flushes on taken branches and jumps. Instruction memory is loaded via a testbench write port or `$readmemh`. Loads and stores for the SoC reach the bus through `dmem_axi_lite_master` which acts as a load-store unit, while standalone CPU simulations use on-chip `data_memory`. The CPU and SoC microarchitectures are shown below (most address and control signals are omitted for simplicity).
 
-CPU Microarchitecture
+<div align="center">
+<img src="assets/rv32i-cpu-diagram.png" width="100%" alt="CPU Microarchitecture" width="720"/>
+<p>CPU Microarchitecture</p>
+</div>
 
-SoC Microarchitecture
+<div align="center">
+<img src="assets/rv32i-soc-diagram.png" width="100%" alt="SoC Microarchitecture" width="720"/>
+<p>SoC Microarchitecture</p>
+</div>
 
 ## Architecture Overview
 
